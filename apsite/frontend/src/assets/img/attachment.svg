@@ -1,0 +1,10 @@
+<svg id="그룹_304" data-name="그룹 304" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="사각형_280" data-name="사각형 280" width="20" height="20" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="그룹_301" data-name="그룹 301" clip-path="url(#clip-path)">
+    <path id="합치기_1" data-name="합치기 1" d="M1.754,17.534A1.753,1.753,0,0,1,0,15.782V1.752A1.753,1.753,0,0,1,1.754,0H8.18l5.849,5.847v9.935a1.753,1.753,0,0,1-1.754,1.752ZM1.333,1.752v14.03a.421.421,0,0,0,.421.419H12.275a.421.421,0,0,0,.421-.419V6.436H7.58v-5.1H1.754A.422.422,0,0,0,1.333,1.752ZM8.327,13a3.245,3.245,0,1,1,1.06-1.06l1.785,1.785-1.06,1.06ZM5.4,9.005a1.746,1.746,0,1,0,1.234-.511A1.746,1.746,0,0,0,5.4,9.005Z" transform="translate(2.985 1.233)" fill="#666" stroke="rgba(0,0,0,0)" stroke-miterlimit="10" stroke-width="1"/>
+  </g>
+</svg>

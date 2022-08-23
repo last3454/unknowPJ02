@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="70" height="70" viewBox="0 0 70 70">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #a7bfe9;
+      }
+
+      .cls-2 {
+        clip-path: url(#clip-path);
+      }
+    </style>
+    <clipPath id="clip-path">
+      <rect id="사각형_182" data-name="사각형 182" class="cls-1" width="70" height="70" transform="translate(0 0)"/>
+    </clipPath>
+  </defs>
+  <g id="그룹_197" data-name="그룹 197" transform="translate(0.201 0.284)">
+    <g id="그룹_196" data-name="그룹 196" class="cls-2" transform="translate(-0.201 -0.284)">
+      <path id="패스_281" data-name="패스 281" class="cls-1" d="M34.795,0A34.795,34.795,0,1,0,69.589,34.795,34.794,34.794,0,0,0,34.795,0m0,66.11A31.315,31.315,0,1,1,66.11,34.795,31.349,31.349,0,0,1,34.795,66.11" transform="translate(0.178 0.232)"/>
+      <rect id="사각형_181" data-name="사각형 181" class="cls-1" width="3.479" height="20.877" transform="translate(33.233 21.109)"/>
+      <path id="패스_282" data-name="패스 282" class="cls-1" d="M11.24,13a1.74,1.74,0,1,0,1.74,1.74A1.74,1.74,0,0,0,11.24,13" transform="translate(23.733 32.465)"/>
+    </g>
+  </g>
+</svg>

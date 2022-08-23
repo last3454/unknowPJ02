@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aplab.apsite.dbmst.mapper.CommonMapper">
+
+    <insert id="insertCommUploadCont">
+        INSERT INTO AP_COMM_UPLOAD_CONT
+        (
+            SEQ
+            , FILE_BYTEA
+            , REG_USER_CD
+            , REG_DTM
+            , UPD_USER_CD
+            , UPD_DTM
+        )
+        SELECT  #{seq} AS SEQ
+                , A.FILE_BYTEA
+                , A.REG_USER_CD
+                , NOW() AS REG_DTM
+                , A.UPD_USER_CD
+                , NOW() AS UPD_DTM
+        FROM    AP_COMM_UPLOAD_TEMP A
+        WHERE   A.SEQ = #{tempSeq}
+    </insert>
+
+    <insert id="insertCommImage" useGeneratedKeys="true" keyProperty="seq">
+        INSERT INTO AP_COMM_IMAGE
+        (
+            TARGET_KEY
+            , UPLOAD_CD
+            , TABLE_NM
+            , VER
+            , FILE_NM
+            , FILE_EXT
+            , FILE_TYPE
+            , FILE_SIZE
+            , BUFFER1
+            , BUFFER2
+            , BUFFER3
+            , DEL_YN
+            , REG_USER_CD
+            , REG_DTM
+            , UPD_USER_CD
+            , UPD_DTM
+        )
+        SELECT  #{targetKey} AS TARGET_KEY
+                , #{uploadCd} AS UPLOAD_CD
+                , #{tableNm} AS TABLE_NM
+                , #{ver} AS VER
+                , A.FILE_NM
+                , A.FILE_EXT
+                , A.FILE_TYPE
+                , A.FILE_SIZE
+                , #{buffer1} AS BUFFER1
+                , #{buffer2} AS BUFFER2
+                , #{buffer3} AS BUFFER3
+                , 'N' AS DEL_YN
+                , A.REG_USER_CD
+                , NOW() AS REG_DTM
+                , A.UPD_USER_CD
+                , NOW() AS UPD_DTM
+        FROM    AP_COMM_UPLOAD_TEMP A
+        WHERE   A.SEQ = #{tempSeq}
+    </insert>
+
+    <insert id="insertCommImageCont">
+        INSERT INTO AP_COMM_IMAGE_CONT
+        (
+            SEQ
+            , FILE_BYTEA
+            , REG_USER_CD
+            , REG_DTM
+            , UPD_USER_CD
+            , UPD_DTM
+        )
+        SELECT  #{seq} AS SEQ
+                , A.FILE_BYTEA
+                , A.REG_USER_CD
+                , NOW() AS REG_DTM
+                , A.UPD_USER_CD
+                , NOW() AS UPD_DTM
+        FROM    AP_COMM_UPLOAD_TEMP A
+        WHERE   A.SEQ = #{tempSeq}
+    </insert>
+
+    <delete id="deleteCommUploadTemp">
+        DELETE FROM AP_COMM_UPLOAD_TEMP A
+        WHERE  A.SEQ = #{seq}
+    </delete>
+
+    <select id="findTiumCodeList" resultType="com.aplab.apsite.model.dto.comm.CodeSubDTO">
+        /* CommonMapper.findTiumCodeList */
+        SELECT    V_MST_CODE AS GROUP_CD
+                , V_SUB_CODE AS CODE
+                , #{langCd} AS LANG_CD
+                , DECODE(#{langCd}, 'ko', V_SUB_CODENM, V_SUB_CODENM_EN) AS CODE_NM
+                , V_SUB_CODENM_EN AS CODE_NM_EN
+                , V_BUFFER1 AS BUFFER1
+                , V_BUFFER2 AS BUFFER2
+                , V_BUFFER3 AS BUFFER3
+          FROM    SSM_SUBCODE
+         WHERE    1=1
+           AND    V_FLAG_USE = 'Y'
+           AND    V_MST_CODE IN
+        <foreach collection="arrMstCd" item="mstCd" open="(" separator="," close=")">
+           #{mstCd}
+        </foreach>
+        ORDER BY N_SEQNO ASC
+    </select>
+
+    <select id="findMenuLevelList" resultType="com.aplab.apsite.model.dto.comm.CommMenuDTO">
+        /* CommonMapper.findMenuLevelList */
+      SELECT LEVEL
+            , CONNECT_BY_ISLEAF AS LEAF_YN
+            , TBL.*
+      FROM  (
+            SELECT    M.MENUID
+                    , M.MENUNM
+                    , M.MENUNM_EN
+                    , M.ROUTER
+                    , DECODE(M.UMENUID, '0000000', '', M.UMENUID) AS UMENUID
+                    , M.PAGEID
+                    , M.FLAG_USE
+                    , M.FLAG_LINK
+                    , P.PAGENM
+                    , DECODE(P.PAGE_URL,NULL,'',P.PAGE_URL) AS PAGE_URL
+                    , M.REG_USERID
+                    , M.REG_DTM
+                    , M.UPDATE_USERID
+                    , M.UPDATE_DTM
+                    , M.SEQNO
+             FROM    SSM_MENU_GRP M, SSM_PAGE_GRP P
+             WHERE
+             M.MENUID IN (
+	         	SELECT RECORDID FROM SSM_AUTH_GRP WHERE FLAG_AUTH IN
+		        <foreach collection="arrGroupId" item="groupId" open="(" separator="," close=")">
+		         #{groupId}
+		        </foreach>
+	         )
+             AND M.PAGEID = P.PAGEID(+)
+             AND M.FLAG_USE = 'Y'
+        ) TBL
+        WHERE MENUID != 'GRP0001'
+        START WITH MENUID        = 'GRP0001'
+        CONNECT BY PRIOR MENUID = UMENUID
+        ORDER SIBLINGS BY SEQNO
+    </select>
+
+    <select id="findPageLevelList" resultType="com.aplab.apsite.model.dto.comm.CommMenuDTO">
+    	/* CommonMapper.findPageLevelList */
+         SELECT    M.MENUID
+                , M.MENUNM
+                , M.MENUNM_EN
+                , M.ROUTER
+                , DECODE(M.UMENUID, '0000000', '', M.UMENUID) AS UMENUID
+                , M.FLAG_USE
+                , M.FLAG_LINK
+                , P.PAGEID
+                , P.PAGENM
+                , DECODE(P.PAGE_URL,NULL,'',P.PAGE_URL) AS PAGE_URL
+                , M.REG_USERID
+                , M.REG_DTM
+                , M.UPDATE_USERID
+                , M.UPDATE_DTM
+                , M.SEQNO
+         FROM    SSM_MENU_GRP M, SSM_PAGE_GRP P
+         WHERE
+             M.MENUID = P.MENUID
+         AND M.MENUID IN (
+         	SELECT RECORDID FROM SSM_AUTH_GRP WHERE FLAG_AUTH IN
+	         <foreach collection="arrGroupId" item="groupId" open="(" separator="," close=")">
+	          #{groupId}
+	         </foreach>
+         )
+         AND M.FLAG_USE = 'Y'
+    </select>
+    
+    <select id="findPageAuthCount" resultType="java.lang.Integer">
+        /* CommonMapper.findPageAuthCount */
+        SELECT  COUNT(*)
+         FROM    SSM_MENU_GRP M, SSM_PAGE_GRP P
+         WHERE
+             M.MENUID = P.MENUID
+         AND P.API_URL = #{apiUrl}
+         AND M.MENUID IN (
+            SELECT RECORDID FROM SSM_AUTH_GRP WHERE FLAG_AUTH IN
+             <foreach collection="arrGroupId" item="groupId" open="(" separator="," close=")">
+              #{groupId}
+             </foreach>
+         )
+         AND M.FLAG_USE = 'Y'
+    </select>
+
+    <select id="findUploadVer" resultType="java.lang.Integer">
+       /* CommonMapper.findUploadVer */
+       SELECT  NVL(MAX(VER), 0)
+         FROM  COMM_UPLOAD
+        WHERE  TARGET_KEY = #{targetKey}
+          AND  UPLOAD_CD = #{uploadCd}
+    </select>
+
+    <sql id="findConListInclude">
+         FROM  ZPLMT12 ZM
+               , (
+                   SELECT  V_CONCD
+                           , MAX(DECODE(V_LANGU,'1',V_CONNAME)) V_CONNAME_CH
+                           , MAX(DECODE(V_LANGU,'1',V_PSNAME))  V_PSNAME_CH
+                           , MAX(DECODE(V_LANGU,'1',V_FCNAME))  V_FCNAME_CH
+                           , MAX(DECODE(V_LANGU,'3',V_CONNAME)) V_CONNAME_KO
+                           , MAX(DECODE(V_LANGU,'3',V_PSNAME))  V_PSNAME_KO
+                           , MAX(DECODE(V_LANGU,'3',V_FCNAME))  V_FCNAME_KO
+                           , MAX(DECODE(V_LANGU,'E',V_CONNAME)) V_CONNAME_EN
+                           , MAX(DECODE(V_LANGU,'E',V_PSNAME))  V_PSNAME_EN
+                           , MAX(DECODE(V_LANGU,'E',V_FCNAME))  V_FCNAME_EN
+                           , MAX(DECODE(V_LANGU,'1',V_ERDAT)) V_ERDAT_CH
+                           , MAX(DECODE(V_LANGU,'3',V_ERDAT)) V_ERDAT_KO
+                           , MAX(DECODE(V_LANGU,'E',V_ERDAT)) V_ERDAT_EN
+                           , MAX(DECODE(V_LANGU,'1',V_ERNAM)) V_ERNAM_CH
+                           , MAX(DECODE(V_LANGU,'3',V_ERNAM)) V_ERNAM_KO
+                           , MAX(DECODE(V_LANGU,'E',V_ERNAM)) V_ERNAM_EN
+                     FROM  ZPLMT12_TX
+                    GROUP BY V_CONCD
+               ) ZT
+         WHERE  ZM.V_CONCD = ZT.V_CONCD
+        <if test="keyword != null and keyword != ''">
+           AND  ZM.V_CASNO||';'||ZM.V_CONCD||';'||V_PSNAME_KO||';'||V_PSNAME_EN||';'||V_PSNAME_CH LIKE '%' || TRIM(UPPER( #{keyword} )) || '%'
+        </if>
+           AND  (
+                (ZM.V_MIXRE NOT LIKE '%중복코드%' AND UPPER(ZM.V_MIXRE) NOT LIKE '%CARRY OVER%')
+                OR ZM.V_MIXRE IS NULL
+           )
+    </sql>
+
+    <select id="findConListCount" resultType="java.lang.Integer">
+        SELECT  COUNT(*)
+        <include refid="findConListInclude" />
+    </select>
+
+    <select id="findConList" resultType="com.aplab.apsite.model.dto.comm.ConInfoDTO">
+        SELECT  M.*
+          FROM  (
+                SELECT  ROW_NUMBER() OVER(ORDER BY ZM.V_CONCD DESC) ROW_NUM
+                        , ZM.V_CONCD
+                        , ZM.V_CASNO
+                        , ZM.V_MIXRE
+                        , ZT.V_PSNAME_KO
+                        , ZT.V_PSNAME_EN
+                        , ZT.V_PSNAME_CH
+                        , ZT.V_CONNAME_KO
+                        , ZT.V_CONNAME_EN
+                        , ZT.V_CONNAME_CH
+                        , ZT.V_FCNAME_KO
+                        , ZT.V_FCNAME_EN
+                        , ZT.V_FCNAME_CH
+                <include refid="findConListInclude" />
+          ) M
+         WHERE  M.ROW_NUM BETWEEN #{startRownum} AND #{endRownum}
+       ORDER BY M.ROW_NUM ASC
+    </select>
+
+    <select id="findLaborList" resultType="com.aplab.apsite.model.dto.comm.LaborInfoDTO">
+        SELECT  USR.V_USERID
+                , USR.V_USERNM_EN
+                , DECODE(#{langCd}, 'ko', USR.V_USERNM, USR.V_USERNM_EN) AS V_USERNM
+                , DEPT.V_SIGMA_DEPTNM AS V_DEPTNM
+          FROM  SSM_USERMASTER USR,
+                (
+                SELECT V_SIGMA_DEPTCD
+                        , V_SIGMA_DEPTNM
+                FROM    SSM_SIGMADEPT
+                WHERE   V_FLAG_USE = 'Y'
+                 AND     V_FLAG_SHOW = 'Y'
+                ) DEPT
+        WHERE   USR.V_FLAG_RETIRE = 'Y'
+          AND   USR.V_FLAG_EXTERNAL = 'N'
+          AND   USR.V_FLAG_EMP ='Y'
+          AND   USR.V_RND_YN = 'Y'
+        <if test="keyword != null and keyword != ''">
+          AND   (
+                UPPER(USR.V_USERNM) LIKE '%' || UPPER(#{keyword}) || '%'
+                OR
+                UPPER(USR.V_USERNM_EN) LIKE '%' || UPPER(#{keyword}) || '%'
+          )
+        </if>
+          AND   USR.V_SIGMA_DEPTCD = DEPT.V_SIGMA_DEPTCD
+    </select>
+
+    <insert id="copyFileList">
+        INSERT INTO COMM_UPLOAD (
+            SEQ
+            , TARGET_KEY
+            , UPLOAD_CD
+            , TABLE_NM
+            , VER
+            , FILE_NM
+            , FILE_EXT
+            , FILE_TYPE
+            , FILE_SIZE
+            , BUFFER1
+            , BUFFER2
+            , BUFFER3
+            , DEL_YN
+            , REG_USER_CD
+            , REG_DTM
+            , UPD_USER_CD
+            , UPD_DTM
+            , HTTP_PATH
+            , SSL_PATH
+            , KEY_PATH
+            , PRE_VER
+        ) SELECT
+            COMM_UPLOAD_SEQ.NEXTVAL
+            , TARGET_KEY
+            , UPLOAD_CD
+            , TABLE_NM
+            , #{ver}
+            , FILE_NM
+            , FILE_EXT
+            , FILE_TYPE
+            , FILE_SIZE
+            , BUFFER1
+            , BUFFER2
+            , BUFFER3
+            , DEL_YN
+            , REG_USER_CD
+            , REG_DTM
+            , UPD_USER_CD
+            , UPD_DTM
+            , HTTP_PATH
+            , SSL_PATH
+            , KEY_PATH
+            , #{preVer}
+      FROM  COMM_UPLOAD
+     WHERE  SEQ = #{seq}
+       AND  DEL_YN = 'N'
+    </insert>
+
+    <select id="findCommUploadHisList" resultType="com.aplab.apsite.model.dto.comm.CommUploadDTO">
+    	/* CommonMapper.findCommUploadHisList */
+        SELECT
+            ROW_NUMBER() OVER(PARTITION BY TARGET_KEY, UPLOAD_CD, VER ORDER BY SEQ ASC) ROW_NUM
+            , COUNT(VER) OVER(PARTITION BY TARGET_KEY, UPLOAD_CD, VER) VER_CNT
+            , MAX(VER) OVER(PARTITION BY TARGET_KEY, UPLOAD_CD) AS MAX_VER
+            , SEQ
+            , FILE_NM
+            , VER
+            , REG_DTM
+            , FIXED_YN
+            , TARGET_KEY
+        FROM (
+            SELECT
+                DENSE_RANK() OVER(PARTITION BY TARGET_KEY, UPLOAD_CD ORDER BY VER DESC) AS VER_RANK
+                , SEQ
+                , TARGET_KEY
+                , UPLOAD_CD
+                , FILE_NM
+                , VER
+                , REG_DTM
+                , FIXED_YN
+            FROM
+                COMM_UPLOAD
+            WHERE DEL_YN = 'N'
+        <choose>
+            <when test='reviewFlag != "Y"'>
+                AND (TARGET_KEY = #{targetKey} OR TARGET_KEY LIKE #{preRecordCd} || '%')
+            </when>
+            <otherwise>
+                AND TARGET_KEY = #{targetKey}
+            </otherwise>
+        </choose>
+            
+        
+            AND UPLOAD_CD = #{uploadCd}
+            AND FILE_TYPE IS NULL
+        ) TBL
+        <if test='reviewFlag != "Y"'>
+        WHERE TBL.VER_RANK = 1
+        </if>
+        ORDER BY TBL.TARGET_KEY DESC, TBL.VER DESC, TBL.SEQ ASC
+    </select>
+</mapper>

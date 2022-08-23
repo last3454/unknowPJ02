@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
+	<property name="LOG_PATTERN" value="%d{yyyyMMdd HH:mm:ss.SSS} [%thread] %-3level %logger{5} - %msg %n"/>
+    <property name="LOG_DIR" value="/data/was/tomcat9/logs" />
+
+	<!--콘솔에 로그를 남깁니다.-->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+	  <encoder><pattern>${LOG_PATTERN}</pattern></encoder>
+	</appender>
+
+	<!--level은 TRACE > DEBUG > INFO > WARN > ERROR > OFF -->
+	<logger name="jdbc" level="OFF"/>
+	<logger name="jdbc.sqlonly" level="OFF"/>
+	<logger name="jdbc.sqltiming" level="DEBUG"/>
+	<logger name="jdbc.audit" level="OFF"/>
+	<logger name="jdbc.resultset" level="OFF"/>
+<!-- 	<logger name="jdbc.resulttable" level="DEBUG"/> -->
+	<logger name="jdbc.connection" level="OFF"/>
+
+    <springProfile name="local">
+		<root level="INFO">
+		  <appender-ref ref="STDOUT" />
+		</root>
+    </springProfile>
+    <springProfile name="!local">
+		<!--파일에 로그를 남깁니다.-->
+		<appender name="FILE_SAVE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+			<file>${LOG_DIR}/amore_grp.log</file>
+		  	<encoder>
+		    	<pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+		  	</encoder>
+		  	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		    	<!-- .gz,.zip 등을 넣으면 자동 일자별 로그파일 압축 -->
+		    	<fileNamePattern>${LOG_DIR}/amore_grp.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+		    	<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+		    	<maxFileSize>100MB</maxFileSize>
+		    	</timeBasedFileNamingAndTriggeringPolicy>
+		    	<!-- 일자별 로그파일 최대 보관주기(~일), 해당 설정일 이상된 파일은 자동으로 제거-->
+		    	<maxHistory>30</maxHistory>
+		  	</rollingPolicy>
+		</appender>
+		<root level="INFO">
+		  <appender-ref ref="STDOUT" />
+		  <appender-ref ref="FILE_SAVE" />
+		</root>
+	</springProfile>
+</configuration>

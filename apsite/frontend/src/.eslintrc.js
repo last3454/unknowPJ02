@@ -1,0 +1,10 @@
+module.exports = {
+  extends: [
+    'plugin:vue/vue3-essential',
+    'prettier'
+  ],
+  rules: {
+    'vue/no-unused-vars': 'error',
+    'vue/no-multiple-template-root': 0
+  }
+}

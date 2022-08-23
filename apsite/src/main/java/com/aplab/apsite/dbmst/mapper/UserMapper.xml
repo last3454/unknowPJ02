@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aplab.apsite.dbmst.mapper.UserMapper">
+
+    <select id="findUserId" resultType="com.aplab.apsite.model.dto.user.UserDTO">
+	    SELECT
+	          USR.V_USERNM AS USER_NM
+	        , USR.V_USERID AS USER_CD
+	        , USR.V_USERID AS LOGIN_ID
+	        , USR.V_PASSWORD AS LOGIN_PW
+	        , SMD.V_SIGMA_DEPTNM AS DEPT_NM
+	        , SMD.V_SIGMA_DEPTNM AS USER_COMP_DEPT_NM
+	        , USR.V_EMAIL AS EMAIL
+	        , NVL(USR.V_PHONENO_OUT, USR.V_PHONENO) AS MOBILE_NO
+	        , 'AP' AS COMP_CD
+	        , '01' AS STATUS_CD
+	        , 'N' AS MASTER_FLAG
+	        , USR.V_REG_USERID AS REG_USER_ID
+	        , TO_DATE(USR.V_REG_DTM, 'YYYYMMDDHH24MISS') AS REG_DTM
+	        , USR.V_UPDATE_USERID AS UPD_USER_ID
+	        , TO_DATE(USR.V_UPDATE_DTM, 'YYYYMMDDHH24MISS') AS UPD_DTM
+	    FROM
+	        SSM_USERMASTER USR, SSM_SIGMADEPT SMD
+	    WHERE
+	       USR.V_SIGMA_DEPTCD = SMD.V_SIGMA_DEPTCD
+	   AND UPPER(USR.V_USERID) = #{userid}
+    </select>
+
+    <select id="findUserNmTiumList" resultType="com.aplab.apsite.model.dto.user.UserDTO">
+	    SELECT
+	          USR.V_USERNM AS USER_NM
+	        , USR.V_USERID AS USER_CD
+	        , USR.V_USERID AS LOGIN_ID
+	        , USR.V_PASSWORD AS LOGIN_PW
+	        , SMD.V_SIGMA_DEPTNM AS DEPT_NM
+	        , USR.V_EMAIL AS EMAIL
+	        , NVL(USR.V_PHONENO_OUT, USR.V_PHONENO) AS MOBILE_NO
+	        , 'AP' AS COMP_CD
+	        , '01' AS STATUS_CD
+	        , 'N' AS MASTER_FLAG
+	        , USR.V_REG_USERID AS REG_USER_ID
+	        , TO_DATE(USR.V_REG_DTM, 'YYYYMMDDHH24MISS') AS REG_DTM
+	        , USR.V_UPDATE_USERID AS UPD_USER_ID
+	        , TO_DATE(USR.V_UPDATE_DTM, 'YYYYMMDDHH24MISS') AS UPD_DTM
+	    FROM
+	        SSM_USERMASTER USR, SSM_SIGMADEPT SMD
+	    WHERE
+	       USR.V_SIGMA_DEPTCD = SMD.V_SIGMA_DEPTCD
+	   <if test="userNm != null and userNm !=''">
+       AND USR.V_USERNM LIKE '%'||#{userNm}||'%'
+       </if>
+       <if test='managerYn == "Y"'>
+	   AND (
+	   	USR.V_USERID = SMD.V_MANAGERID AND USR.V_SIGMA_DEPTCD IN ('20412','50055184','50055187','20364','20147','74051')
+			OR
+			USR.V_USERID  IN (
+				SELECT DISTINCT USERID FROM SSM_GRPUSER_GRP sgg
+				WHERE GROUPID IN ('SGG000011','SGG000012','SGG000013','SGG000014')
+			)
+		)
+       </if>
+    </select>
+
+    <select id="findTiumGroupEmail" resultType="java.lang.String">
+	    SELECT
+			LISTAGG(USR.V_EMAIL, ',') WITHIN GROUP(ORDER BY USR.V_USERID) AS LIST_EMAIL
+	    FROM
+	        SSM_USERMASTER USR
+		WHERE
+		USR.V_USERID  IN (SELECT USERID FROM SSM_GRPUSER_GRP WHERE GROUPID = #{groupId})
+    </select>
+
+	<select id="findPwdByUserCd" resultType="String">
+		SELECT LOGIN_PW
+		FROM USER_MST
+		WHERE USER_CD = #{userCd}
+    </select>
+
+	<select id="findCompUserList" resultType="com.aplab.apsite.model.dto.user.UserDTO">
+		SELECT  USER_CD
+		        , USER_NM
+	            , EMAIL
+	            , MOBILE_NO
+	            , REG_DTM
+		  FROM  USER_MST
+		 WHERE  COMP_CD = #{compCd}
+           AND  DEL_YN = 'N'
+           AND  REST_YN = 'N'
+         ORDER BY MASTER_FLAG DESC, REG_DTM ASC
+	</select>
+
+	<select id="findUserGrp" resultType="com.aplab.apsite.model.dto.user.UserDTO">
+		SELECT
+			 um.USER_CD
+			,DECODE(um.USER_NM, ' ', umi.USER_NM, um.USER_NM) AS USER_NM
+			,NVL(um.LOGIN_ID, umi.LOGIN_ID) AS LOGIN_ID
+			,NVL(um.LOGIN_PW, umi.LOGIN_PW) AS LOGIN_PW
+			,NVL(um.EMAIL, umi.EMAIL) AS EMAIL
+			,um.STATUS_CD
+			,NVL(um.DEPT_NM, umi.DEPT_NM) AS DEPT_NM
+			,NVL(um.COMP_CD, umi.COMP_CD) AS COMP_CD
+			,um.MASTER_FLAG
+			,um.MOBILE_NO
+			,um.LAST_LOGIN_DT
+			,um.PW_FAIL_CNT
+			,um.PW_EXPIRED_DT
+			,um.PREV_LOGIN_PW1
+			,um.PREV_LOGIN_PW2
+			,um.REG_USER_ID
+			,um.REG_DTM
+			,um.UPD_USER_ID
+			,um.UPD_DTM
+			,um.USER_DI
+			,um.REST_YN
+			,um.DEL_YN
+		    ,um.USER_COMP_DEPT_NM
+		    ,umi.USER_NM
+		FROM
+			USER_MST um
+		LEFT OUTER JOIN
+			USER_MST_ISOLATION umi
+		ON(um.USER_CD = umi.USER_CD)
+		WHERE
+			(UPPER(um.LOGIN_ID) = #{loginId} AND um.STATUS_CD = #{statusCd}) OR UPPER(umi.LOGIN_ID) = #{loginId}
+	</select>
+
+	<select id="findUserDiLog" resultType="java.lang.String">
+	   SELECT  USER_CD
+	     FROM  USER_DI_LOG
+	    WHERE  USER_DI = #{userDi}
+	      AND  TO_CHAR(REG_DTM, 'YYYYMMDD HH24:MI:SS') BETWEEN TO_CHAR(SYSDATE-(10/(24*60)), 'YYYYMMDD HH24:MI:SS') AND TO_CHAR(SYSDATE, 'YYYYMMDD HH24:MI:SS')
+	      AND  ROWNUM = 1
+	</select>
+</mapper>

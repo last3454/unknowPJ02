@@ -1,0 +1,22 @@
+server:
+  port: 9000
+  servlet:
+    context-path: /
+
+spring:
+  profiles:
+    #default:local
+    active: @spring.profiles.active@
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+logging:
+  level:
+    org:
+      springframework:
+        web: error
+        security: error
+    '[com.aplab.apsite]': info
+    '[com.aplab.apsite.mapper]': error
