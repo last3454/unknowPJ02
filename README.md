@@ -12,7 +12,7 @@ This template should help get you started developing with Vue 3 in Vite. The tem
 
 # (1 - 1) LOMBOK 설치
     URL : https://projectlombok.org/download
- 
+
  다운로드 후 LOMBOK.jar 더블 클릭 → 이클립스 또는 STS 실행 파일에 설정
 
  .INI 파일 들어가서 직접 설정해줘도 됩니다.
@@ -26,17 +26,17 @@ This template should help get you started developing with Vue 3 in Vite. The tem
 
  # (3) GIT 설치
     URL : https://git-scm.com/
-  
+
  설치 완료 후 윈도우 → cmd(명령 프롬포트) → git version
 
  VERSION이 노출 되면 정상 설치
 
  WORKSPACE 설정 후 git_bash 창에다가 명령어 실행
 
- EX) git clone -b develop https://gitlab.apdigit.tech/rni_center/amore_grp_new
+ EX) git clone -b develop
 
  PS : git_bash 가 귀찮다면 소스트리를 받으셔도 됩니다.  
- 
+
  URL : https://www.sourcetreeapp.com/
 
 # (4) 실행
